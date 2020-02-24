@@ -1,0 +1,38 @@
+.awesome-marker i {
+	font-size: 18px;
+	/*margin-top: 8px; */
+}
+body {
+	padding: 0;
+	margin: 0;
+}
+html, body, #map {
+	height: 100%;
+}
+.emf{
+	color: navy;
+	font-weight:bold;
+}
+.info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,1);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+.leaflet-tile{ 
+  /*filter: blur(10px);*/
+}
+.leaflet-tile.leaflet-tile-loaded{
+   
+}
+svg.leaflet-zoom-animated{
+/* pointer-events: auto;	 */
+}
+
+svg > g > path{
+	fill:none;
+	stroke-width: 3;
+	stroke: darkred;
+}
