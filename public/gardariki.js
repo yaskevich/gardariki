@@ -1,5 +1,3 @@
-var isRotate = false;
-var timer;
 var defLayerIndex = 10;
 var osm_attr = 'Map data <a href="https://wikimediafoundation.org/wiki/Maps_Terms_of_Use">Wikimedia maps</a> &copy; <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a>';
 var wikimedia = L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', { maxZoom: 19, minZoom: 6, opacity: 1} );
@@ -29,10 +27,11 @@ function style(feature) {
 };
 var redMarker = L.VectorMarkers.icon({
 	//icon: 'exclamation-triangle',
-	 icon: 'paw',
-	 markerColor:"yellow",
+	icon: 'landmark',
+	markerColor:"white",
 	iconColor: "black",
-	prefix: 'fa',
+	extraClasses: 'fas',
+	prefix: 'fa'
 	// spin: true,
   });
 
@@ -83,31 +82,84 @@ var baseLayers2 = {
 	})	
 };
 
-var vkl = new L.featureGroup({interactive: false});
-vkl.setStyle({className: 'vkl'});
-vkl.bringToBack();
+// var vkl = new L.featureGroup({interactive: false});
+// vkl.setStyle({className: 'vkl'});
+// vkl.bringToBack();
+
+
+// var testlayer = L.featureGroup().addTo(map);  
+// var testlayer = L.featureGroup({attribution: "Gardariki", className: 'test', pane: 'cities'})
+var testlayer = L.featureGroup()
+ // .bindPopup('Hello world!')
+    // .on('click', function() { alert('Clicked on a member of the group!'); })
+	;  
+
 var overlays = {
-	"ВКЛ, 1430 гг.": vkl,
+	// "ВКЛ, 1430 гг.": vkl,
+	"test": testlayer
 };
+
+
+var labelTextCollision = new L.LabelTextCollision({
+                            collisionFlg : true
+                        });
   
+  
+
 var map = L.map('map', { 
 	zoomControl:false, 
 	center: [53.916667, 27.55],
 	zoom: 7, 
 	// layers: [wikimedia],
-	layers: [datamap, vkl],
+	// layers: [datamap, vkl],
+	layers: [datamap, testlayer],
+	renderer : labelTextCollision
 });
+  
 
-map.createPane('borders');
-map.getPane('borders').style.zIndex = 650;
-map.getPane('borders').style.pointerEvents = 'none';
+// map.createPane('borders');
+// map.getPane('borders').style.zIndex = 650;
+// map.getPane('borders').style.pointerEvents = 'none';
 
-map.createPane('cities');
-map.getPane('cities').style.zIndex = 1050;
-map.getPane('cities').style.pointerEvents = 'all';
+// map.createPane('cities');
+// map.getPane('cities').style.zIndex = 1050;
+// map.getPane('cities').style.pointerEvents = 'all';
 
 L.control.layers(Object.assign(baseLayers2), overlays).addTo(map);
 // L.marker([53.916667, 27.55], {icon: redMarker}).bindPopup('Мінск').addTo(map);
+
+var svg = '<svg height="210" width="500"><polygon points="100,10 40,198 190,78 10,78 160,198" style="fill:lime;stroke:purple;stroke-width:5;fill-rule:nonzero;"/></svg>';
+var iconUrl = 'data:image/svg+xml;base64,' + btoa(svg);
+
+var icon = L.icon( {
+            // iconUrl: 'mdbg.svg',
+            iconUrl: iconUrl,
+        } );
+
+ var CustomIcon = L.Icon.extend({
+			options: {
+				iconSize:     [40, 40],
+				// shadowSize:   [50, 64],
+				// iconAnchor:   [22, 94],
+				// shadowAnchor: [4, 62],
+				// popupAnchor:  [-3, -76]
+			}
+		});
+// https://leafletjs.com/reference-1.6.0.html#icon    
+// var url = encodeURI("data:image/svg+xml," + svgrect).replace('#','%23');
+// console.log(url);
+
+var MagdIcon = new CustomIcon({iconUrl: '/mdbg.svg'});
+// var nIcon = L.divIcon({ html: mgdsvg, iconSize: [24, 38], iconAnchor: [12, 38] })
+		
+// L.marker([53.56807, 26.13735], {icon: MagdIcon}).bindPopup('Камень').addTo(testlayer);
+L.marker([53.56807, 26.13735], {icon: MagdIcon})
+	// .bindLabel('123', {
+		// noHide: true,
+		// direction: 'auto'
+	// })
+	.bindTooltip("Карэлічы", {permanent: true, className: "cityname", offset: [0, -20], opacity: 1, direction: "center" })
+	.bindPopup('Скарб').addTo(testlayer);
 
 		// d3.json("vkl1430.geojson", function(error, data) {
 				// var geojsonFeature = data.features[0];
@@ -123,7 +175,8 @@ L.control.layers(Object.assign(baseLayers2), overlays).addTo(map);
 
 
 	/* Initialize the SVG layer */
-	var svgLayer = L.svg({attribution: "Gardariki", className: 'dots', pane: 'cities'});
+	// var svgLayer = L.svg({attribution: "Gardariki", className: 'dots', pane: 'cities'});
+	var svgLayer = L.svg();
 	svgLayer.addTo(map); 
 	var tip;
 
@@ -151,10 +204,16 @@ tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
 		});
 		svg.call(tip); 
 		
+		
+		
+		
 
 	d3.json("list.json", function(geo) {
 		/* Add a LatLng object to each item in the dataset */
 		// console.log(htls);
+		
+		
+		
 		
 		
 		var datum = geo.features;
@@ -165,6 +224,13 @@ tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
 				d.LatLng = new L.LatLng(ll[1],ll[0]);	
 				// console.log(d.LatLng);
 			}
+				
+				// console.log(d);
+                        var c = L.circleMarker(d.LatLng, {
+                            radius : 5,
+                            text : d.properties.name
+                        });
+                        testlayer.addLayer(c);
 			
 		})
 		// var domainOnlyScale = d3.scale.linear().domain([0,2]);
@@ -176,6 +242,7 @@ tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
 		var cls  = ['#c994c7','#df65b0','#e7298a','#ce1256','#91003f'];
 	
 	
+		
 	
 		var feature = g.selectAll("circle")
 			.data(datum)
@@ -184,48 +251,40 @@ tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
 			// .style("opacity", .6) 
 			// .style("fill", "red")
 			.style("fill", function(d){
-				// var dm = parseFloat(d.min);
-				// console.log(dm);
-				// if (dm == 0.01){
-					// return cls[4];
-				// } else {
-					// // console.log("yes");
-					// return "black";
-				// }
-				// return colors(dm);
+
 				return "darkred";
 			})
-			.attr("r", 7)
+			.attr("r", 10)
 			.on('mouseover', tip.show)
 			.on('mouseout', tip.hide)
 			.on('click' , function(d){ 
 				// console.log(d.properties.wiki);
 				// d3.json("/city?id="+d.properties.wiki, function(datum) {
-				d3.json("/city2?id="+d.properties.id, function(datum) {
-					// console.log(datum);
-					// var wikimgd = d.properties.magdeburg_wiki?'<p>Магдэбургскае права (Wiki): '+d.properties.magdeburg_wiki+'</p>':'';
-					var wikimgd = d.properties.mentions?'<p>Першыя згадкі: '+d.properties.mentions+'</p>':'';
-					
-					var events = {"become_settlement": "<span class='purple-text'>→ страта статусу горада</span>", "get_magdeburg":"<span class='red-text darken-4'>Магдэбургскае права</span>", "become_city": "горад","become_town": "горад", "become_village": "вёска", "change_state": "", "become_agrotown": "аграгарадок"};
-					var histlist = '';
-						if(datum.history) {
-							histlist = datum.history.map(function(x){
-								var evt = events[x.code];
-								return '<li class="collection-item"><div>'+ (x["date_from"]||x["year"]) +'<span class="secondary-content">'+(evt?(evt+", "):"")+x.unit_be+'</span></div>' +'</li>';
-							});
-							histlist = histlist.join('');
-						}
-					
-					// console.log(histlist);
-					
-					map.openModal({content: '<div class="col s12 m8 offset-m2 l6 offset-l3"><div class="card-panel grey lighten-5 z-depth-1"><div class="row valign-wrapper"><div class="col s2"><img src="'+datum["img"]+'" alt="" class="responsive-img"></div><div class="col s10"><span class="black-text flow-text"> '  + d.properties.name + '  </span></div></div></div></div>' +
-					
-					  '<div class="row"><div class="col s12"><ul class="tabs"><li class="tab col s3"><a class="active" href="#test1">Звесткі</a></li>						<li class="tab col s3"><a href="#test2">Гісторыя</a></li> 						<li class="tab col s3"><a href="#test3">Асобы</a></li> 						<li class="tab col s3"><a href="#test4">Арганізацыі</a></li> 					  </ul> 					</div> 					<div id="test1" class="col s12"><div class="row"><div class="col s12 m12"><div class="card red lighten-5"><div class="card-content black-text">'+datum.etym+'</div></div></div></div></div> <div id="test2" class="col s12"><ul class="collection">' + histlist + '</ul></div> 					<div id="test3" class="col s12">Test 3</div> 					<div id="test4" class="col s12">Test 4</div> 				  </div>'
-					+
-					"<div class='row'><p><a target='_blank' href='https://www.wikidata.org/wiki/" +d.properties.wiki+ "'>Wikidata</a></p><p class='hide'>Магдэбургскае права: " + d.properties.magdeburg + "</p>"+wikimgd+"</div>"
-					});  
+				d3.text("/api?id="+d.properties.id, function(result) {
+					map.openModal({content: result});
 					$('.tabs').tabs();
-				
+					$('.click').click(function(){
+						// map.panTo(new L.LatLng(52, 24));
+						console.log(d.properties.id);
+						map.setView(new L.LatLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), 14);
+						map.closeModal();
+						if (pois.hasOwnProperty(d.properties.id)){
+							// pois[d.properties.id]
+						} else {
+							d3.json("data/poi/"+d.properties.id+'.json', function(info) {
+									pois[d.properties.id] = info;
+									
+									for (x of info){
+										// console.log(x.tourism);
+											// console.log(x);
+											// console.log(x.geometry.coordinates);
+											// L.marker([x.geometry.coordinates[1], x.geometry.coordinates[0]], {icon: redMarker}).bindPopup('Мінск').addTo(vkl);
+											L.marker([x.geometry.coordinates[1], x.geometry.coordinates[0]], {icon: redMarker}).addTo(map).on('mouseover', function(e){console.log("kek");});
+									}
+							});							
+						}
+						
+					});
 				});
 
 			})
@@ -250,30 +309,27 @@ tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
 		}
 	})			 
 
-var customControl =  L.Control.extend({
-  options: {
-	position: 'topleft'
-  },
-  onAdd: function (map) {
-	var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom info');
-	container.innerHTML = map.getZoom();
-	// container.onclick = function(){
-	  // console.log('buttonClicked');
+// var customControl =  L.Control.extend({
+  // options: {
+	// position: 'topleft'
+  // },
+  // onAdd: function (map) {
+	// var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom info');
+	// container.innerHTML = map.getZoom();
+	// return container;
+  // },
+  // update: function (props) {	
+	// this._container.innerHTML = props;
 	// }
-	return container;
-  },
-  update: function (props) {	
-	this._container.innerHTML = props;
-	}
-});
+// });
 
-var info = new customControl();
-map.addControl(info);
-map.on('baselayerchange', function (e) {
-	info.update(e.name);
-});
-map.on('overlayadd', function (e) {
-console.log(e.layer.bringToBack());	
-}); 
+// var info = new customControl();
+// map.addControl(info);
+// map.on('baselayerchange', function (e) {
+	// info.update(e.name);
+// });
+// map.on('overlayadd', function (e) {
+// console.log(e.layer.bringToBack());	
+// }); 
 
-var layerControlElement = document.getElementsByClassName('leaflet-control-layers')[0];
+// var layerControlElement = document.getElementsByClassName('leaflet-control-layers')[0];

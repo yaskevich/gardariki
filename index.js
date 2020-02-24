@@ -2,7 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
-
+const mustache = require('mustache');
 // const fetch = require('node-fetch');
 // const proxy = require('http-proxy-middleware');
 const csv = require('csvtojson')
@@ -145,11 +145,25 @@ app.all('/city', function(req, res) {
 
 });
 
-app.all('/city2', function(req, res) {
+app.all('/test', function(req, res) {
+	
+	(async() => {
+		
+		const rr2 = await axios.get("http://localhost:4141/orgs?cities=1");
+		const persons = rr2.data;
+		console.log(persons);
+
+		res.json(persons);	
+
+})();	
+});
+
+
+app.all('/api', function(req, res) {
 	// console.log("query", req.query);
 	let id = parseInt(req.query.id);
+	let html = fs.readFileSync(path.join(public, "template.html"), 'utf8');
 	
-
 	(async() => {
 		
 	let datum;
@@ -163,7 +177,11 @@ app.all('/city2', function(req, res) {
 		const dd = rr.data[0];
 		
 		const rr2 = await axios.get("http://localhost:4141/persons?city="+id);
-		const persons = rr2.data[0];
+		const persons = rr2.data;
+		// console.log(persons);
+		
+		const resp_orgs = await axios.get("http://localhost:4141/orgs?cities="+id);
+		const orgs  = resp_orgs.data;
 		
 		const response = await axios.get("http://localhost:4141/episodes?cities="+id);
 		const data = response.data;
@@ -181,27 +199,17 @@ app.all('/city2', function(req, res) {
 		}).sort(function(a, b) { return ('' + a.year).localeCompare(b.year)});
 		
 		datum = {"wiki_id": wid, "history": hist, "etym": city.etym, name: city.name, legends: city.legends, mentions: city.mentions, "img": img, "stats": {"qty": dd.qty, "year": dd.year}, "persons": persons};
-		
-		
 		// var wikimgd = d.properties.magdeburg_wiki?'<p>Магдэбургскае права (Wiki): '+d.properties.magdeburg_wiki+'</p>':'';
+		const events = {"become_settlement": "<span class='purple-text'>→ страта статусу горада</span>", "get_magdeburg":"<span class='red-text darken-4'>Магдэбургскае права</span>", "become_city": "горад","become_town": "горад", "become_village": "вёска", "change_state": "", "become_agrotown": "аграгарадок"};
+		let histlist = '';
+		if(datum.history) {
+			histlist = datum.history.map(function(x){
+				var evt = events[x.code];
+				return '<li class="collection-item"><div>'+ (x["date_from"]||x["year"]) +'<span class="secondary-content">'+(evt?(evt+", "):"")+x.unit_be+'</span></div>' +'</li>';
+			});
+			histlist = histlist.join('');
+		}
 
-		// var wikimgd = d.properties.mentions?'<p>Першыя згадкі: '+d.properties.mentions+'</p>':'';
-		var wikimgd = datum.mentions?'<p>Першыя згадкі: '+datum.mentions+'</p>':'';
-					
-		var events = {"become_settlement": "<span class='purple-text'>→ страта статусу горада</span>", "get_magdeburg":"<span class='red-text darken-4'>Магдэбургскае права</span>", "become_city": "горад","become_town": "горад", "become_village": "вёска", "change_state": "", "become_agrotown": "аграгарадок"};
-		var histlist = '';
-			if(datum.history) {
-				histlist = datum.history.map(function(x){
-					var evt = events[x.code];
-					return '<li class="collection-item"><div>'+ (x["date_from"]||x["year"]) +'<span class="secondary-content">'+(evt?(evt+", "):"")+x.unit_be+'</span></div>' +'</li>';
-				});
-				histlist = histlist.join('');
-			}
-		let tmpl  = '<div class="col s12 m8 offset-m2 l6 offset-l3"><div class="card-panel grey lighten-5 z-depth-1"><div class="row valign-wrapper"><div class="col s2"><img src="'+datum["img"]+'" alt="" class="responsive-img"></div><div class="col s10"><span class="black-text flow-text"> '  + datum.name + '  </span></div></div></div></div>' +
-					
-					  '<div class="row"><div class="col s12"><ul class="tabs"><li class="tab col s3"><a class="active" href="#test1">Звесткі</a></li>						<li class="tab col s3"><a href="#test2">Гісторыя</a></li> 						<li class="tab col s3"><a href="#test3">Асобы</a></li> 						<li class="tab col s3"><a href="#test4">Арганізацыі</a></li> 					  </ul> 					</div> 					<div id="test1" class="col s12"><div class="row"><div class="col s12 m12"><div class="card red lighten-5"><div class="card-content black-text">'+datum.etym+'</div></div></div></div></div> <div id="test2" class="col s12"><ul class="collection">' + histlist + '</ul></div> 					<div id="test3" class="col s12">Test 3</div> 					<div id="test4" class="col s12">Test 4</div> 				  </div>'
-					+
-					"<div class='row'><p><a target='_blank' href='https://www.wikidata.org/wiki/" +datum.wiki_id+ "'>Wikidata</a></p><p class='hide'>Магдэбургскае права: " + datum.name + "</p>"+wikimgd+"</div>"	
 		
 		// console.log(one.city);
 		// res.json(response.data);
@@ -214,8 +222,21 @@ app.all('/city2', function(req, res) {
 		// });
 	// }
 	// res.json(datum);	
-	console.log("send to browser");
-	res.send(tmpl);	
+	let rs  = mustache.render(html, {
+		"name": datum.name,
+		"histlist": histlist,
+		"wid": datum.wiki_id,
+		"mentions": datum.mentions,
+		"etym": datum.etym,
+		"img": datum["img"],
+		"persons": persons,
+		"orgs": orgs
+		});
+
+	// console.log(rs);
+	// console.log("send to browser");
+	// res.send(tmpl);	
+	res.send((id==6) ? "Казімірава Слабада зараз частка Мсціслава" : rs);	
 })();	
 });
 
