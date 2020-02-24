@@ -83,7 +83,11 @@ var baseLayers2 = {
 	})	
 };
 
+var vkl = new L.featureGroup({interactive: false});
+vkl.setStyle({className: 'vkl'});
+vkl.bringToBack();
 var overlays = {
+	"ВКЛ, 1430 гг.": vkl,
 };
   
 var map = L.map('map', { 
@@ -91,7 +95,7 @@ var map = L.map('map', {
 	center: [53.916667, 27.55],
 	zoom: 7, 
 	// layers: [wikimedia],
-	layers: [datamap],
+	layers: [datamap, vkl],
 });
 
 map.createPane('borders');
@@ -105,7 +109,17 @@ map.getPane('cities').style.pointerEvents = 'all';
 L.control.layers(Object.assign(baseLayers2), overlays).addTo(map);
 // L.marker([53.916667, 27.55], {icon: redMarker}).bindPopup('Мінск').addTo(map);
 
+		// d3.json("vkl1430.geojson", function(error, data) {
+				// var geojsonFeature = data.features[0];
+				// // console.log(geojsonFeature);
+				
+				// L.geoJSON(geojsonFeature, {interactive: false, pane: 'borders'}).addTo(vkl);
+				// vkl.setStyle({className: 'vkl'});
+	
+				
 
+			// });
+	
 
 
 	/* Initialize the SVG layer */
@@ -138,9 +152,11 @@ tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
 		svg.call(tip); 
 		
 
-	d3.json("geo.json", function(geo) {
+	d3.json("list.json", function(geo) {
 		/* Add a LatLng object to each item in the dataset */
 		// console.log(htls);
+		
+		
 		var datum = geo.features;
 		datum.forEach(function(d) {
 			
@@ -183,8 +199,35 @@ tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
 			.on('mouseover', tip.show)
 			.on('mouseout', tip.hide)
 			.on('click' , function(d){ 
-				var wikimgd = d.properties.magdeburg_wiki?'<p>Магдэбургскае права (Wiki): '+d.properties.magdeburg_wiki+'</p>':'';
-				map.openModal({content: "<h3>" + d.properties.name + "</h3><div><p><a target='_blank' href='https://www.wikidata.org/wiki/" +d.properties.wiki+ "'>Wikidata</a></p><p>Магдэбургскае права: " + d.properties.magdeburg + "</p>"+wikimgd+"</div>"});  
+				// console.log(d.properties.wiki);
+				// d3.json("/city?id="+d.properties.wiki, function(datum) {
+				d3.json("/city2?id="+d.properties.id, function(datum) {
+					// console.log(datum);
+					// var wikimgd = d.properties.magdeburg_wiki?'<p>Магдэбургскае права (Wiki): '+d.properties.magdeburg_wiki+'</p>':'';
+					var wikimgd = d.properties.mentions?'<p>Першыя згадкі: '+d.properties.mentions+'</p>':'';
+					
+					var events = {"become_settlement": "<span class='purple-text'>→ страта статусу горада</span>", "get_magdeburg":"<span class='red-text darken-4'>Магдэбургскае права</span>", "become_city": "горад","become_town": "горад", "become_village": "вёска", "change_state": "", "become_agrotown": "аграгарадок"};
+					var histlist = '';
+						if(datum.history) {
+							histlist = datum.history.map(function(x){
+								var evt = events[x.code];
+								return '<li class="collection-item"><div>'+ (x["date_from"]||x["year"]) +'<span class="secondary-content">'+(evt?(evt+", "):"")+x.unit_be+'</span></div>' +'</li>';
+							});
+							histlist = histlist.join('');
+						}
+					
+					// console.log(histlist);
+					
+					map.openModal({content: '<div class="col s12 m8 offset-m2 l6 offset-l3"><div class="card-panel grey lighten-5 z-depth-1"><div class="row valign-wrapper"><div class="col s2"><img src="'+datum["img"]+'" alt="" class="responsive-img"></div><div class="col s10"><span class="black-text flow-text"> '  + d.properties.name + '  </span></div></div></div></div>' +
+					
+					  '<div class="row"><div class="col s12"><ul class="tabs"><li class="tab col s3"><a class="active" href="#test1">Звесткі</a></li>						<li class="tab col s3"><a href="#test2">Гісторыя</a></li> 						<li class="tab col s3"><a href="#test3">Асобы</a></li> 						<li class="tab col s3"><a href="#test4">Арганізацыі</a></li> 					  </ul> 					</div> 					<div id="test1" class="col s12"><div class="row"><div class="col s12 m12"><div class="card red lighten-5"><div class="card-content black-text">'+datum.etym+'</div></div></div></div></div> <div id="test2" class="col s12"><ul class="collection">' + histlist + '</ul></div> 					<div id="test3" class="col s12">Test 3</div> 					<div id="test4" class="col s12">Test 4</div> 				  </div>'
+					+
+					"<div class='row'><p><a target='_blank' href='https://www.wikidata.org/wiki/" +d.properties.wiki+ "'>Wikidata</a></p><p class='hide'>Магдэбургскае права: " + d.properties.magdeburg + "</p>"+wikimgd+"</div>"
+					});  
+					$('.tabs').tabs();
+				
+				});
+
 			})
 			;  
 		map.on("viewreset", update);

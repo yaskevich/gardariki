@@ -1,0 +1,18 @@
+{
+  "name": "gardfront",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "csvtojson": "^2.0.10",
+    "express": "^4.17.1",
+    "materialize-css": "^1.0.0-rc.2",
+    "mustache": "^4.0.0"
+  }
+}
