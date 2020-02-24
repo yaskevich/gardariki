@@ -83,11 +83,7 @@ var baseLayers2 = {
 	})	
 };
 
-var vkl = new L.featureGroup({interactive: false});
-vkl.setStyle({className: 'vkl'});
-vkl.bringToBack();
 var overlays = {
-	"ВКЛ, 1430 гг.": vkl,
 };
   
 var map = L.map('map', { 
@@ -95,7 +91,7 @@ var map = L.map('map', {
 	center: [53.916667, 27.55],
 	zoom: 7, 
 	// layers: [wikimedia],
-	layers: [datamap, vkl],
+	layers: [datamap],
 });
 
 map.createPane('borders');
@@ -109,32 +105,7 @@ map.getPane('cities').style.pointerEvents = 'all';
 L.control.layers(Object.assign(baseLayers2), overlays).addTo(map);
 // L.marker([53.916667, 27.55], {icon: redMarker}).bindPopup('Мінск').addTo(map);
 
-		d3.json("vkl1430.geojson", function(error, data) {
-				var geojsonFeature = data.features[0];
-				// console.log(geojsonFeature);
-				
-				L.geoJSON(geojsonFeature, {interactive: false, pane: 'borders'}).addTo(vkl);
-				vkl.setStyle({className: 'vkl'});
-				// console.log(vkl);
 
-				// var vkl_node = d3.select(".vkl");
-				// // console.log(vkl.parentNode);
-				
-				// vkl_node.style("background-color", "black")
-				
-			// $(vkl.getContainer()).addClass('osmLayer');
-			// $(vkl.getContainer()).addClass('osmLayer');
-			// console.log((vkl.getContainer()));
-				// d3.select(this).lower();
-
-
-				// vkl.interactive = false;
-				// vkl.bubblingMouseEvents = true;
-				// vkl.addData(data);
-				
-
-			});
-	
 
 
 	/* Initialize the SVG layer */
