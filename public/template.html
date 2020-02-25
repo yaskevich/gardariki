@@ -22,8 +22,16 @@
     </div>
     <div id="test1" class="col s12">
 		<div class="card blue lighten-3">
-			<div class="card-content black-text">Першыя упамінанні: {{mentions}} </div>
+			<div class="card-content black-text">
+				<div>Першыя упамінанні: {{mentions}}
+				<span class="secondary-content">{{stats.qty}} жыхароў ({{stats.year}} г.)</span>
+				</div>
+				 
+			</div>
 		</div>       
+		<div class="card purple lighten-3">
+			<div class="card-content black-text">{{lead}} </div>
+		</div>	
 		
 		<div class="card red lighten-5">
 			<div class="card-content black-text">{{etym}}</div>
