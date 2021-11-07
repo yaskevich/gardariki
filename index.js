@@ -5,7 +5,7 @@ const satelize = require('satelize-lts');
 
 const app = express();
 const cfg = pr.init();
-const port = cfg.front.port;
+const port = process.env.PORT || cfg.front.port || 8080;
 
 const isTestHost = (r) => r.headers.host === cfg.front.hosts.test;
 
