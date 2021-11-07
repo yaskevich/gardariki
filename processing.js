@@ -8,9 +8,13 @@ const { inlineSource } = require('inline-source');
 const mustache = require('mustache');
 const pino = require('pino');
 const logger = pino({
-  prettyPrint: { colorize: true, translateTime: "SYS:dd.mm.yyyy HH:MM:ss", ignore: 'pid,hostname' }
-})
-
+  transport: {
+    target: 'pino-pretty',
+    options: {
+      colorize: true, translateTime: "SYS:dd.mm.yyyy HH:MM:ss", ignore: 'pid,hostname', 
+    }
+  }
+});
 
 function makeFormatted(text){
 	return (text ? markup
