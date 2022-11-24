@@ -1,6 +1,6 @@
 {
   "name": "gardfront",
-  "version": "1.1.1",
+  "version": "1.1.0",
   "description": "Front-end app for Gardariki.BY project",
   "main": "index.js",
   "scripts": {
@@ -22,22 +22,22 @@
   "author": "Alyaxey Yaskevich",
   "license": "ISC",
   "dependencies": {
-    "Leaflet.vector-markers": "0.0.6",
-    "axios": "^0.24.0",
-    "config": "^3.3.6",
+    "axios": "^1.2.0",
+    "config": "^3.3.8",
     "csvtojson": "^2.0.10",
-    "express": "^4.17.1",
-    "inline-source": "^7.2.0",
-    "jquery": "^3.6.0",
-    "leaflet": "^1.7.1",
+    "express": "^4.18.2",
+    "inline-source": "^8.0.2",
+    "jquery": "^3.6.1",
+    "leaflet": "^1.9.3",
     "leaflet-easybutton": "^2.4.0",
     "leaflet-modal": "^0.2.0",
+    "Leaflet.vector-markers": "^0.0.5",
     "materialize-css": "^1.0.0",
     "mustache": "^4.2.0",
-    "pino": "^7.1.0",
-    "pino-pretty": "^7.2.0",
-    "route-async": "^1.0.7",
+    "pino": "^8.7.0",
+    "pino-pretty": "^9.1.1",
+    "route-async": "^1.0.8",
     "satelize-lts": "^1.0.1",
-    "showdown": "^1.9.1"
+    "showdown": "^2.1.0"
   }
 }
