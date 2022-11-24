@@ -68,9 +68,9 @@ $(window).on('load', function(){
     var wikimedia = L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', {
         maxZoom: 19,
         minZoom: 6,
-        opacity: 1
+        opacity: 1,
     });
-    var datamap = L.tileLayer('https://datamap.by/tile/{z}/{x}/{y}.png', {
+    var datamap = L.tileLayer('https://tiles.gardariki.by/tile/{z}/{x}/{y}.png', {
         maxZoom: 19,
         minZoom: 6,
         opacity: 1
@@ -88,25 +88,38 @@ $(window).on('load', function(){
         opacity: 1
     });
 
-
-    var baseLayers2 = {
-
-        "Datamap": datamap,
-        "OSM": L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    var osmmap  = L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             minZoom: 6,
-            opacity: 1
-        }),
+            opacity: 1,
+            attribution: osm_attr 
+        });
+	
+    var baseLayers2 = {
+
+        // "Datamap": datamap,
+        "OSM": osmmap,
         "OSM.DE": L.tileLayer("https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png", {
             maxZoom: 19,
             minZoom: 4,
-            opacity: 1
+            opacity: 1,
+            attribution: osm_attr 
         }),
-        "AWMC": L.tileLayer("https://a.tiles.mapbox.com/v3/isawnyu.map-knmctlkh/{z}/{x}/{y}.png", {
+
+      "OSM.FR": L.tileLayer("https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", {
             maxZoom: 19,
-            minZoom: 6,
-            opacity: 1
+            minZoom: 4,
+            opacity: 1,
+            attribution: osm_attr 
         }),
+
+
+       // "AWMC": L.tileLayer("https://a.tiles.mapbox.com/v3/isawnyu.map-knmctlkh/{z}/{x}/{y}.png", {
+       //     maxZoom: 19,
+       //     minZoom: 6,
+       //     opacity: 1
+       // }),
+
         //positron
         "CartoDB": L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png", {
             maxZoom: 19,
@@ -115,20 +128,22 @@ $(window).on('load', function(){
             "attribution": "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> &copy; <a href='http://cartodb.com/attributions'>CartoDB</a>",
             "subdomains": "abcd"
         }),
-        "OSM (no lbl)": L.tileLayer('https://tiles.wmflabs.org/osm-no-labels/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            minZoom: 6,
-            opacity: 1
-        }),
+     //   "OSM (no lbl)": L.tileLayer('https://tiles.wmflabs.org/osm-no-labels/{z}/{x}/{y}.png', {
+     //       maxZoom: 19,
+     //       minZoom: 6,
+     //       opacity: 1
+     //   }),
         "Watercolor": L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg', {
             maxZoom: 19,
             minZoom: 6,
-            opacity: 1
+            opacity: 1,
+            attribution: ' Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
         }),
         "River": L.tileLayer('https://{s}.tile.openstreetmap.fr/openriverboatmap/{z}/{x}/{y}.png', {
             maxZoom: 19,
             minZoom: 6,
-            opacity: 1
+            opacity: 1,
+            attribution: osm_attr 
         }),
         //'',
         // ,
@@ -157,7 +172,7 @@ $(window).on('load', function(){
         zoom: 7,
         // layers: [wikimedia],
         // layers: [datamap, vkl],
-        layers: [datamap, datalayer],
+        layers: [osmmap, datalayer],
     });
 
     function map_update(d) {
