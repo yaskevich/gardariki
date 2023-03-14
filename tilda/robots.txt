@@ -5,5 +5,5 @@ Disallow: /tilda/click*
 Disallow: /tilda/scroll*
 Disallow: /tilda/popup*
 Disallow:
-Sitemap: http://gardarika.tilda.ws/sitemap.xml
-Host: gardarika.tilda.ws
+Sitemap: http://gardariki.philology.by/sitemap.xml
+Host: gardariki.philology.by
