@@ -1,18 +1,20 @@
 {
   "name": "gardfront",
-  "version": "1.1.0",
-  "description": "Front-end app for Gardariki.BY project",
+  "version": "2.0.0",
+  "description": "Front-end app for Gardariki project",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "echo \"started\""
+    "dev": "nodemon index.js"
   },
   "nodemonConfig": {
     "ignore": [
       "test/*",
       "docs/*",
       "cache/*",
-      "public/*"
+      "public/*",
+      "data/*",
+      "dist/*"
     ],
     "delay": "2500",
     "events": {
@@ -22,22 +24,25 @@
   "author": "Alyaxey Yaskevich",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.2.0",
-    "config": "^3.3.8",
-    "csvtojson": "^2.0.10",
+    "args": "^5.0.3",
+    "axios": "^1.5.0",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "inline-source": "^8.0.2",
-    "jquery": "^3.6.1",
-    "leaflet": "^1.9.3",
+    "jquery": "^3.7.1",
+    "leaflet": "^1.9.4",
     "leaflet-easybutton": "^2.4.0",
     "leaflet-modal": "^0.2.0",
-    "Leaflet.vector-markers": "^0.0.5",
+    "Leaflet.vector-markers": "^0.0.6",
     "materialize-css": "^1.0.0",
     "mustache": "^4.2.0",
-    "pino": "^8.7.0",
-    "pino-pretty": "^9.1.1",
-    "route-async": "^1.0.8",
-    "satelize-lts": "^1.0.1",
+    "pino": "^8.15.1",
+    "pino-pretty": "^10.2.0",
     "showdown": "^2.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.49.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.28.1"
   }
 }
