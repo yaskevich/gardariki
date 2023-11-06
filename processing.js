@@ -5,6 +5,7 @@ import showdown from 'showdown';
 import { inlineSource } from 'inline-source';
 import mustache from 'mustache';
 import pino from 'pino';
+import GeoJSON from 'geojson';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 /* eslint-disable no-param-reassign */
@@ -49,6 +50,8 @@ const paths = {
   cache: path.join(dataDir, 'api'),
   cacheList: path.join(dataDir, 'list.json'),
   cacheListJS: path.join(dataDir, 'citylist.js'),
+  magdeburgJSON: path.join(dataDir, 'magdeburg.json'),
+  magdeburgJS: path.join(dataDir, 'magdeburg.js'),
   pub: pubDir,
   tilda: tildaDir,
   landing: landingDir,
@@ -342,6 +345,36 @@ const buildInlineMap = async () => {
   }
 };
 
+const getMagdeburg = async (isQuiet = false) => {
+  const resp = await axios.get('https://magdeburg-law.com/historic-city/');
+  if (!isQuiet) {
+    console.log('Magdeburg Law -> status', resp.status);
+  }
+  if (resp?.status === 200) {
+    const data = resp.data.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s+)/gm, ' ');
+    const re = /\s+markers\s=\s(.*)(?=var\simage)/m;
+    const datum = re.exec(data);
+    const expression = `var ${datum.shift()} return [markers, infoWindowContent]`;
+    // eslint-disable-next-line no-new-func
+    const results = new Function(expression)();
+    const objects = results?.[0].map((x) => {
+      const [name, country] = x[0].split(', ');
+      return ({
+        name, country, lat: x[1], lon: x[2]
+      });
+    });
+    const geo = GeoJSON.parse(objects, { Point: ['lat', 'lon'] });
+    // const chunk = JSON.stringify(results?.[0], null, 2);
+    const chunk = JSON.stringify(geo, null, 2);
+    fs.writeFileSync(paths.magdeburgJSON, chunk);
+    fs.writeFileSync(paths.magdeburgJS, `var magdeburgs = ${chunk}`);
+    if (!isQuiet) {
+      console.log('Magdeburg Law -> data', chunk?.length);
+    }
+    // fs.writeFileSync('datum2.json', JSON.stringify(boxes, null, 2));
+  }
+};
+
 export default {
   // cwd: __dirname,
   isTestHost,
@@ -353,4 +386,5 @@ export default {
   logger,
   buildAllModals,
   buildInlineMap,
+  getMagdeburg,
 };
