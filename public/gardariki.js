@@ -5,14 +5,14 @@
 /* eslint-disable no-var */
 
 $(window).on('load', () => {
+  var isEuropeLoaded = false;
   var flags = { en: 'belarus-26903.svg', be: 'flags-38754.svg' };
   var poiCache = {};
   var mapCenter = new L.LatLng(53.916667, 27.55);
   var lang = 'be';
   var currentId;
   var mode = '';
-
-  var oMarker = L.VectorMarkers.icon({
+  var landmarkIcon = L.VectorMarkers.icon({
     // icon: 'exclamation-triangle',
     icon: 'landmark',
     markerColor: 'white',
@@ -21,7 +21,7 @@ $(window).on('load', () => {
     prefix: 'fa'
     // spin: true,
   });
-  var vMarker = L.VectorMarkers.icon({
+  var starIcon = L.VectorMarkers.icon({
     // icon: 'exclamation-triangle',
     icon: 'star',
     markerColor: 'white',
@@ -32,19 +32,14 @@ $(window).on('load', () => {
   });
 
   // L.marker([53.916667, 27.55], {icon: vMarker}).bindPopup('Мінск').addTo(map);
-  var CustomIcon = L.Icon.extend({
-    options: {
-      iconSize: [40, 40],
-      // shadowSize:   [50, 64],
-      iconAnchor: [20, 40],
-      // shadowAnchor: [4, 62],
-      // popupAnchor:  [-3, -76]
-    }
+  var towerIcon = L.icon({
+    iconUrl: './Tower_gardarike-01.svg',
+    iconSize: [40, 40],
+    // shadowSize:   [50, 64],
+    iconAnchor: [20, 40],
+    // shadowAnchor: [4, 62],
+    // popupAnchor:  [-3, -76]
   });
-
-  // var MagdIcon = new CustomIcon({ iconUrl: '/mdbg.svg'});
-  var MagdIcon = new CustomIcon({ iconUrl: './Tower_gardarike-01.svg' });
-  // var nIcon = L.divIcon({ html: mgdsvg, iconSize: [24, 38], iconAnchor: [12, 38] })
 
   function getUrl() {
     var match; var pl = /\+/g;
@@ -77,20 +72,6 @@ $(window).on('load', () => {
       }, '', newurl);
     }
   }
-  var urlObj = getUrl();
-  if (!('l' in urlObj)) {
-    lang = 'be';
-  } else {
-    lang = urlObj.l;
-  }
-  if ('q' in urlObj) {
-    mode = urlObj.q;
-  }
-  if ('id' in urlObj) {
-    currentId = urlObj.id;
-  }
-
-  console.log(JSON.stringify(urlObj));
 
   var osmAttribution = 'Map data &copy; <a href="https://openstreetmap.org" target="_blank">OpenStreetMap</a>';
   //   var wikimedia = L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', {
@@ -155,18 +136,25 @@ $(window).on('load', () => {
       attribution: "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> &copy; <a href='http://cartodb.com/attributions'>CartoDB</a>",
       subdomains: 'abcd'
     }),
+
+    CAWM: L.tileLayer('https://cawm.lib.uiowa.edu/tiles/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      minZoom: 6,
+      opacity: 1,
+      attribution: "<a href='https://cawm.lib.uiowa.edu'>Consortium of Ancient World Mappers</a>",
+    }),
     //   "OSM (no lbl)": L.tileLayer('https://tiles.wmflabs.org/osm-no-labels/{z}/{x}/{y}.png', {
     //       maxZoom: 19,
     //       minZoom: 6,
     //       opacity: 1
     //   }),
-    Watercolor: L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg', {
-      maxZoom: 19,
-      minZoom: 6,
-      opacity: 1,
-      attribution: ' Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
-    }),
-    River: L.tileLayer('https://{s}.tile.openstreetmap.fr/openriverboatmap/{z}/{x}/{y}.png', {
+    // Watercolor: L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg', {
+    //   maxZoom: 19,
+    //   minZoom: 6,
+    //   opacity: 1,
+    //   attribution: ' Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
+    // }),
+    'OSM River': L.tileLayer('https://{s}.tile.openstreetmap.fr/openriverboatmap/{z}/{x}/{y}.png', {
       maxZoom: 19,
       minZoom: 6,
       opacity: 1,
@@ -174,20 +162,76 @@ $(window).on('load', () => {
     }),
   };
 
-  var datalayer = L.featureGroup();
+  var mlby = L.featureGroup(null, { attribution: 'Gardariki Project' });
+  var mleu = L.featureGroup(null, { attribution: '<a href="https://magdeburg-law.com" target="_blank">Magdeburg Law</a>' });
 
-  var overlays = {
-    Гарады: datalayer,
-    1905: west
+  var layersEnabled = [osmmap, mlby];
+
+  var names = {
+    west: { be: 'Мапа 1905 года', en: 'Map (1905)' },
+    mlby: { be: 'М.П. на Беларусі', en: 'ML in Belarus' },
+    mleu: { be: 'М.П. па Еўропе', en: 'ML in Europe' },
   };
+
+  function localizeLeaflet() {
+    $('.leaflet-control-layers-overlays span span').eq(0).text(names.west[lang]);
+    $('.leaflet-control-layers-overlays span span').eq(1).text(names.mlby[lang]);
+    $('.leaflet-control-layers-overlays span span').eq(2).text(names.mleu[lang]);
+  }
+
+  function loadEurope() {
+    $.getJSON('/data/magdeburg.json', (data) => {
+      geojsonLayer = L.geoJson(data, {
+        style() { return { color: 'darkred' }; },
+        pointToLayer(feature, latlng) {
+          return new L.CircleMarker(latlng, {
+            radius: 3,
+            opacity: 0.5,
+            fillOpacity: 0.25
+          });
+        },
+        onEachFeature(feature, layer) {
+          layer.bindPopup(feature.properties.name);
+        }
+      });
+      geojsonLayer.addTo(mleu);
+    });
+  }
+
+  var urlObj = getUrl();
+  if (!('l' in urlObj)) {
+    lang = 'be';
+  } else {
+    lang = urlObj.l;
+  }
+  if ('q' in urlObj) {
+    mode = urlObj.q;
+  }
+  if ('id' in urlObj) {
+    currentId = urlObj.id;
+  }
+
+  if ('show' in urlObj && urlObj.show === 'eu') {
+    loadEurope();
+    layersEnabled.push(mleu);
+  }
+
+  console.log(JSON.stringify(urlObj));
+
+  var overlays = { west, mlby, mleu };
 
   var map = L.map('map', {
     // zoomControl:false,
     center: mapCenter,
     zoom: 7,
-    // layers: [wikimedia],
-    // layers: [datamap, vkl],
-    layers: [osmmap, datalayer],
+    layers: layersEnabled
+  });
+
+  map.on('overlayadd', (e) => {
+    // console.log(e.name);
+    if (e.name === 'mleu' && !isEuropeLoaded) {
+      loadEurope();
+    }
   });
 
   function updateMap() {
@@ -212,7 +256,7 @@ $(window).on('load', () => {
     currentId = getUrl().id;
     e.preventDefault();
     map.closeModal();
-    L.marker(latlon, { icon: oMarker }).addTo(map).bindPopup(name);
+    L.marker(latlon, { icon: landmarkIcon }).addTo(map).bindPopup(name);
     map.setView(latlon, 14);
   });
 
@@ -244,6 +288,7 @@ $(window).on('load', () => {
     lang = (lang === 'be') ? 'en' : 'be';
     $(e.target).attr('src', flags[lang]);
     setUrl();
+    localizeLeaflet();
   });
 
   L.control.layers(Object.assign(baseLayers2), overlays).addTo(map);
@@ -257,7 +302,7 @@ $(window).on('load', () => {
         for (x of info) {
           var objname = x.name;
           L.marker([x.geometry.coordinates[1], x.geometry.coordinates[0]], {
-            icon: vMarker
+            icon: starIcon
           })
             .addTo(map)
             .bindPopup(objname);
@@ -336,7 +381,7 @@ $(window).on('load', () => {
 
         var fmtName = `<span class="be ${pref.be}">${d.properties.name_be}</span><span class="en ${pref.en}">${d.properties.name_en}</span>`;
         L.marker(d.LatLng, {
-          icon: MagdIcon,
+          icon: towerIcon,
           city: d.properties.id
         })
         // var place =  L.circleMarker(d.LatLng, { "radius": 10, "color": "darkred", "city": d.properties.id})
@@ -350,11 +395,13 @@ $(window).on('load', () => {
             direction: 'center'
           })
         // .bindPopup('Скарб')
-          .addTo(datalayer);
+          .addTo(mlby);
       }
     });
   }
   populateMap(geojson);
+  localizeLeaflet();
+
   // if (geojson) {
   //   populateMap(geojson);
   // } else {
